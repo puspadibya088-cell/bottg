@@ -8,6 +8,8 @@ from telegram.constants import ParseMode
 from telegram.constants import ChatMemberStatus
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
+parse_mode=ParseMode.MARKDOWN
+
 # ================== CONFIG ==================
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 CHAT_ID = int(os.environ.get('CHAT_ID', -1002800090700))  # Your supergroup ID
