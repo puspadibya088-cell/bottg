@@ -8,7 +8,7 @@ from telegram.constants import ChatMemberStatus
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 # ================== CONFIG ==================
-TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', 8557330337:AAFNiIGDo3TQ69arviN39qrCrqbbbFsFfMI)
+TOKEN = os.environ.get(8557330337:AAFNiIGDo3TQ69arviN39qrCrqbbbFsFfMI)
 CHAT_ID = int(os.environ.get('CHAT_ID', -1002800090700))  # Your supergroup ID
 ATTENDANCE_TOPIC_ID = int(os.environ.get('ATTENDANCE_TOPIC_ID', 290))
 TIMEZONE = pytz.timezone("Asia/Kolkata")
