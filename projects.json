@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "Project Alpha",
+      "deadline": "2026-03-25T23:59:00"
+    },
+    {
+      "name": "Project Beta",
+      "deadline": "2026-03-28T17:30:00"
+    },
+    {
+      "name": "Project Gamma",
+      "deadline": "2026-04-01T20:00:00"
+    },
+    {
+      "name": "Project Delta",
+      "deadline": "2026-04-05T18:00:00"
+    },
+    {
+      "name": "Project Epsilon",
+      "deadline": "2026-04-10T22:00:00"
+    }
+  ]
+}
