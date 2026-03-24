@@ -18,6 +18,17 @@ async def delete_bad_messages(update: Update, context: ContextTypes.DEFAULT_TYPE
     text = message.text.lower()
     clean_text = re.sub(r'[^a-zA-Z]', '', text)
 
+    # ===== 😡 REACT TO "BACCHA" =====
+    if "baccha" in text:
+        try:
+            await context.bot.set_message_reaction(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                reaction=[{"type": "emoji", "emoji": "😡"}]
+            )
+        except Exception as e:
+            print("Reaction error:", e)
+
     # ===== ❌ DELETE BAD WORDS =====
     for word in blocked_words:
         if word in clean_text:
