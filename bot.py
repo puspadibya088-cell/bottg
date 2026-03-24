@@ -45,8 +45,8 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== 🎯 NEW KEYWORD: LAKSHYA / JEE / 2027 =====
     if any(key in text for key in ["lakshya", "jee", "2027"]):
         keyboard = [
-            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live")],
-            [InlineKeyboardButton("🩺 Lakshya NEET", url="https://www.pw.live")]
+            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live/study-v2/batches/6779345c20fa0756e4a7fd08/batch-overview?isNewPpjFlow=true&pageName=ALL_CLASSES#Subjects_2")],
+            [InlineKeyboardButton("🩺 Lakshya NEET", url="https://www.pw.live/study-v2/batches/6779346f920e596fe7f0e247/batch-overview?came_from=batch_listing#Description_1")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
