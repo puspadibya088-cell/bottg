@@ -18,13 +18,18 @@ async def delete_bad_messages(update: Update, context: ContextTypes.DEFAULT_TYPE
     text = message.text.lower()
     clean_text = re.sub(r'[^a-zA-Z]', '', text)
 
-    # ===== 😡 REACT TO "BACCHA" =====
-    if "baccha" in text:
-        try:
-            await context.bot.set_message_reaction(
-                chat_id=message.chat_id,
-                message_id=message.message_id,
-                reaction=[{"type": "emoji", "emoji": "🤬"}]
+# ===== 🤬 REACT / FALLBACK =====
+if "baccha" in text:
+    try:
+        # Try reaction (may fail in some groups)
+        await context.bot.set_message_reaction(
+            chat_id=message.chat_id,
+            message_id=message.message_id,
+            reaction=[{"type": "emoji", "emoji": "🤬"}]
+        )
+    except:
+        # Fallback (guaranteed works)
+        await message.reply_text("🤬")
             )
         except Exception as e:
             print("Reaction error:", e)
