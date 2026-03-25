@@ -7,60 +7,68 @@ from telegram.constants import ParseMode
 # ================== 🔑 CONFIG ==================
 TOKEN = "8557330337:AAFNiIGDo3TQ69arviN39qrCrqbbbFsFfMI"
 
-# Full Schedule Data from Image (March/April 2026)
-# Format: { "YYYY-MM-DD": {"subject": "...", "faculty": "..."} }
-SCHEDULE = {
-    "2026-03-26": {"subject": "Mathematics", "faculty": "Sachin Jakhar Sir"},
-    "2026-03-28": {"subject": "Physical Chemistry", "faculty": "Faisal Razaq Sir"},
-    "2026-03-31": {"subject": "Inorganic Chemistry", "faculty": "Om Pandey Sir"},
-    "2026-04-01": {"subject": "Organic Chemistry", "faculty": "Pankaj Sijariya Sir"},
-    "2026-04-02": {"subject": "Physics", "faculty": "Rahul Yadav Sir"},
-}
+# Schedule Data from Image (March/April 2026)
+SCHEDULE = [
+    {"date": "2026-03-26", "subject": "Mathematics", "faculty": "Sachin Jakhar Sir"},
+    {"date": "2026-03-28", "subject": "Physical Chemistry", "faculty": "Faisal Razaq Sir"},
+    {"date": "2026-03-31", "subject": "Inorganic Chemistry", "faculty": "Om Pandey Sir"},
+    {"date": "2026-04-01", "subject": "Organic Chemistry", "faculty": "Pankaj Sijariya Sir"},
+    {"date": "2026-04-02", "subject": "Physics", "faculty": "Rahul Yadav Sir"},
+]
 
 # ================== 🔥 Blocked Words ==================
 blocked_words = ["gandu", "madarchod", "bhosdi", "spam", "bkl", "nunu", "santanu", "puspa", "harshita", "vanshika", "shika"]
 
 # ================== 📅 BRIDGE COURSE HANDLER (/bridge) ==================
 async def bridge_schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Find the next class based on current date
+    # 1. Delete the user's /bridge command message immediately
+    try:
+        await update.message.delete()
+    except Exception as e:
+        print(f"Could not delete command: {e}")
+
+    # 2. Find the most recent/upcoming class
     today_dt = datetime.now()
-    next_class_date = None
+    target_class = None
     
-    # Sort keys to find the closest upcoming date
-    for date_str in sorted(SCHEDULE.keys()):
-        class_dt = datetime.strptime(date_str, "%Y-%m-%d")
+    for item in SCHEDULE:
+        class_dt = datetime.strptime(item["date"], "%Y-%m-%d")
         if class_dt >= today_dt:
-            next_class_date = date_str
+            target_class = item
             break
-            
-    if next_class_date:
-        class_info = SCHEDULE[next_class_date]
-        display_date = datetime.strptime(next_class_date, "%Y-%m-%d").strftime('%A, %B %d, %Y')
-        
-        # 1. Beautified Message
-        reminder_text = (
-            f"🚀 *LAKSHYA JEE BRIDGE COURSE UPDATE* 🚀\n\n"
-            f"Hey! A gentle reminder for the most recent class:\n\n"
-            f"📚 *Class:* {class_info['subject']}\n"
-            f"👨‍🏫 *Faculty:* {class_info['faculty']}\n"
-            f"📅 *Date:* {display_date}\n"
-            f"⏰ *Time:* TBD (Check PW App)\n\n"
-            f"✨ _Prepare well and stay focused!_"
-        )
-        await update.message.reply_text(reminder_text, parse_mode=ParseMode.MARKDOWN)
+    
+    # Fallback to the last class if all dates have passed
+    if not target_class:
+        target_class = SCHEDULE[-1]
 
-        # 2. Telegram Poll
-        await context.bot.send_poll(
-            chat_id=update.message.chat_id,
-            question=f"Will you attend the {class_info['subject']} class?",
-            options=["✅ Yes, absolutely!", "❌ No, I'll watch later"],
-            is_anonymous=False,
-            allows_multiple_answers=False
-        )
-    else:
-        await update.message.reply_text("🏁 *Bridge Course Completed!* No upcoming classes found in the schedule.", parse_mode=ParseMode.MARKDOWN)
+    display_date = datetime.strptime(target_class["date"], "%Y-%m-%d").strftime('%A, %B %d, %Y')
+    
+    # 3. Send the Beautified Message
+    reminder_text = (
+        f"🚀 *LAKSHYA JEE BRIDGE COURSE UPDATE* 🚀\n\n"
+        f"Hey! A gentle reminder for today's class:\n\n"
+        f"📚 *Class:* {target_class['subject']}\n"
+        f"👨‍🏫 *Faculty:* {target_class['faculty']}\n"
+        f"📅 *Date:* {display_date}\n"
+        f"⏰ *Time:* TBD (Announced Soon)\n\n"
+        f"✨ _Prepare well and stay focused!_"
+    )
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id, 
+        text=reminder_text, 
+        parse_mode=ParseMode.MARKDOWN
+    )
 
-# ================== 🧠 MAIN MESSAGE HANDLER ==================
+    # 4. Send the Standalone Poll
+    await context.bot.send_poll(
+        chat_id=update.effective_chat.id,
+        question=f"Will you attend today's {target_class['subject']} class?",
+        options=["✅ Yes, I'm ready!", "❌ No, I'll watch later"],
+        is_anonymous=False,
+        allows_multiple_answers=False
+    )
+
+# ================== 🧠 PREVIOUS FEATURES (JOJO) ==================
 async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
     if not message or not message.text:
@@ -69,7 +77,7 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = message.text.lower()
     clean_text_alpha = re.sub(r'[^a-z]', '', text)
 
-    # ===== 🤬 REACT / FALLBACK (JOJO FEATURE) =====
+    # ===== 🤬 REACT / FALLBACK =====
     if "baccha" in text:
         try:
             await context.bot.set_message_reaction(
@@ -80,7 +88,7 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             await message.reply_text("🤬")
 
-    # ===== ❌ DELETE BAD WORDS (JOJO FEATURE) =====
+    # ===== ❌ DELETE BAD WORDS =====
     for word in blocked_words:
         if word in clean_text_alpha:
             try:
@@ -89,49 +97,31 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
-    # ===== 🎯 KEYWORD: LAKSHYA / JEE / 2027 =====
+    # ===== 🎯 KEYWORDS: LAKSHYA / ARJUNA / PW =====
     if any(key in text for key in ["lakshya", "jee", "2027"]):
-        keyboard = [
-            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live")],
-            [InlineKeyboardButton("🩺 Lakshya NEET", url="https://www.pw.live")]
-        ]
+        keyboard = [[InlineKeyboardButton("📚 All Classes", url="https://www.pw.live")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        response_text = "📌 *Lakshya JEE 2027 @₹5,000/-*\n*( Offers End on 31st March )*\n\n• LIVE Lectures\n• DPP with Video Solution\n• Digital Preparation KIT ✨"
-        await message.reply_text(response_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        return
-
-    # ===== 🎯 KEYWORD: ARJUNA (JOJO FEATURE) =====
-    if "arjuna" in text:
-        keyboard = [
-            [InlineKeyboardButton("Arjuna JEE 2027", url="https://www.pw.live")],
-            [InlineKeyboardButton("Arjuna NEET 2027", url="https://www.pw.live")]
-        ]
+        await message.reply_text("📌 *Lakshya JEE 2027 @₹5,000/-*\n• LIVE Lectures\n• DPPs\n• Access to Arjuna 2026", reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+    
+    elif "arjuna" in text:
+        keyboard = [[InlineKeyboardButton("Arjuna JEE 2027", url="https://www.pw.live")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await message.reply_text(
-            "🔥 Hey! I think you're asking about PW Arjuna Batch\n\n📚 Course Duration:\n13 April 2026 - 31 January 2027",
-            reply_markup=reply_markup
-        )
-        return
-
-    # ===== 🎯 KEYWORD: PW (JOJO FEATURE) =====
-    if "pw" in text:
+        await message.reply_text("🔥 *PW Arjuna Batch*\n📚 Duration: 13 April 2026 - 31 January 2027", reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+    
+    elif "pw" in text:
         keyboard = [[InlineKeyboardButton("🌐 Go to Website", url="https://www.pw.live")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await message.reply_text(
-            "Physics Wallah is an Indian online education platform that provides accessible learning for students from Class 6 to 12.",
-            reply_markup=reply_markup
-        )
-        return
+        await message.reply_text("Physics Wallah is an Indian online education platform providing accessible learning.", reply_markup=reply_markup)
 
 # ================== 🚀 MAIN ==================
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
     
-    # Add Command Handler for /bridge (you can change this to /bcr if preferred)
+    # Commands
     app.add_handler(CommandHandler("bridge", bridge_schedule_handler))
     
-    # Catch all text messages for previous features
+    # Message Handlers
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, main_handler))
 
-    print("Bot is running with ALL features & /bridge command... 🚀")
+    print("Bot updated! /bridge command with auto-delete and standalone poll is active. 🚀")
     app.run_polling()
