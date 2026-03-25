@@ -1,10 +1,20 @@
 import re
+from datetime import datetime
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 
 # ================== 🔑 CONFIG ==================
 TOKEN = "8557330337:AAFNiIGDo3TQ69arviN39qrCrqbbbFsFfMI"
+
+# Schedule Data from Image (March/April 2026)
+SCHEDULE = {
+    "2026-03-26": {"subject": "Mathematics", "faculty": "Sachin Jakhar Sir"},
+    "2026-03-28": {"subject": "Physical Chemistry", "faculty": "Faisal Razaq Sir"},
+    "2026-03-31": {"subject": "Inorganic Chemistry", "faculty": "Om Pandey Sir"},
+    "2026-04-01": {"subject": "Organic Chemistry", "faculty": "Pankaj Sijariya Sir"},
+    "2026-04-02": {"subject": "Physics", "faculty": "Rahul Yadav Sir"},
+}
 
 # ================== 🔥 Blocked Words ==================
 blocked_words = ["gandu", "madarchod", "bhosdi", "spam", "bkl", "nunu", "santanu", "puspa", "harshita", "vanshika", "shika"]
@@ -15,11 +25,40 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not message or not message.text:
         return
 
-    # Force lowercase for NON-CASE SENSITIVE matching
     text = message.text.lower()
-    
-    # Clean text for profanity (removes special chars like @, ., #)
     clean_text_alpha = re.sub(r'[^a-z]', '', text)
+
+    # ===== 🔔 NEW FEATURE: LAKSHYA SCHEDULE REMINDER & POLL =====
+    if any(key in text for key in ["update", "schedule", "today"]):
+        # Using 2026-03-26 for testing since today is 25th
+        today_date = datetime.now().strftime("%Y-%m-%d")
+        
+        if today_date in SCHEDULE:
+            class_info = SCHEDULE[today_date]
+            
+            # 1. Send Beautified Message
+            reminder_text = (
+                f"🚀 *LAKSHYA JEE BRIDGE COURSE UPDATE* 🚀\n\n"
+                f"Hey! A gentle reminder for today's class:\n\n"
+                f"📚 *Class:* {class_info['subject']}\n"
+                f"👨‍🏫 *Faculty:* {class_info['faculty']}\n"
+                f"📅 *Date:* {datetime.now().strftime('%A, %B %d, %Y')}\n"
+                f"⏰ *Time:* TBD (Check PW App)\n\n"
+                f"✨ _Prepare well and stay focused!_"
+            )
+            await message.reply_text(reminder_text, parse_mode=ParseMode.MARKDOWN)
+
+            # 2. Send Telegram Poll
+            await context.bot.send_poll(
+                chat_id=message.chat_id,
+                question=f"Will you attend today's {class_info['subject']} class?",
+                options=["✅ Yes, absolutely!", "❌ No, I'll watch later"],
+                is_anonymous=False,
+                allows_multiple_answers=False
+            )
+        else:
+            await message.reply_text("📅 *No classes scheduled for today.* Keep revising!", parse_mode=ParseMode.MARKDOWN)
+        return
 
     # ===== 🤬 REACT / FALLBACK (JOJO FEATURE) =====
     if "baccha" in text:
@@ -38,15 +77,15 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await message.delete()
                 print(f"Deleted: {text}")
-                return # Stop processing after deletion
+                return 
             except Exception as e:
                 print("Error:", e)
 
-    # ===== 🎯 NEW KEYWORD: LAKSHYA / JEE / 2027 =====
+    # ===== 🎯 KEYWORD: LAKSHYA / JEE / 2027 =====
     if any(key in text for key in ["lakshya", "jee", "2027"]):
         keyboard = [
-            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live/study-v2/batches/6779345c20fa0756e4a7fd08/batch-overview?isNewPpjFlow=true&pageName=ALL_CLASSES#Subjects_2")],
-            [InlineKeyboardButton("🩺 Lakshya NEET", url="https://www.pw.live/study-v2/batches/6779346f920e596fe7f0e247/batch-overview?came_from=batch_listing#Description_1")]
+            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live")],
+            [InlineKeyboardButton("🩺 Lakshya NEET", url="https://www.pw.live")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
@@ -54,16 +93,10 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "📌 **Lakshya JEE 2027** - https://physicswallah.onelink.me\n\n"
             "**Lakshya JEE 2027 @₹5,000/-**\n"
             "*( Offers End on 31st March )*\n\n"
-            "• LIVE Lectures by Top Faculties ( 2 Faculties Set )\n"
+            "• LIVE Lectures by Top Faculties\n"
             "• DPP with Video Solution\n"
-            "• Regular Tests + AITS\n"
-            "• LIVE Doubt Resolution\n"
             "• Access to all Upcoming Lakshya 2027 Versions\n"
-            "• Access to all Previous Arjuna 2026 Batches\n"
-            "• Access to Parishram 2027\n"
-            "• Digital Preparation KIT ✨\n"
-            "• Mentorship by IITians\n"
-            "• 6 Months PW Talk Subscription"
+            "• Digital Preparation KIT ✨"
         )
         
         await message.reply_text(response_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
@@ -78,8 +111,7 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
         await message.reply_text(
             "🔥 Hey! I think you're asking about PW Arjuna Batch\n\n"
-            "📚 Course Duration:\n"
-            "13 April 2026 - 31 January 2027\n\n"
+            "📚 Course Duration:\n13 April 2026 - 31 January 2027\n\n"
             "👇 Check batches below:",
             reply_markup=reply_markup
         )
@@ -98,9 +130,7 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== 🚀 MAIN ==================
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
-    
-    # Catch all text messages that aren't commands
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, main_handler))
 
-    print("Bot is running with JOJO features... 🚀")
+    print("Bot is running with ALL features... 🚀")
     app.run_polling()
