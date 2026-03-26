@@ -16,7 +16,7 @@ SCHEDULE = [
     {"date": "2026-04-02", "subject": "Physics", "faculty": "Rahul Yadav Sir"},
 ]
 
-blocked_words = ["gandu", "madarchod", "bhosdi", "spam", "bkl", "nunu", "santanu", "puspa", "harshita", "vanshika", "shika"]
+blocked_words = ["gandu", "madarchod", "bhosdi", "spam", "nunu", "santanu", "puspa", "harshita", "vanshika", "shika"]
 
 # ================== 🤖 AUTOMATION HELPERS ==================
 
@@ -31,7 +31,7 @@ async def send_bridge_update(context: ContextTypes.DEFAULT_TYPE, target_chat_id:
             f"📚 *Class:* {subj}\n"
             f"👨‍🏫 *Faculty:* {class_data['faculty']}\n"
             f"📅 *Date:* {display_date}\n"
-            f"⏰ *Time:* 10:00 AM (Live Now)\n\n"
+            f"⏰ *Time:* TBD\n\n"
             f"✨ _Prepare well and stay focused!_"
         )
         
