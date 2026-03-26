@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, time, timedelta
-from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes, Defaults
+from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 
@@ -46,7 +46,6 @@ async def send_bridge_update(context: ContextTypes.DEFAULT_TYPE, target_chat_id:
         print(f"Error sending update: {e}")
 
 async def daily_schedule_checker(context: ContextTypes.DEFAULT_TYPE):
-    # Manual IST offset to avoid pytz deprecation warning
     now_ist = datetime.now() + timedelta(hours=5, minutes=30)
     today_str = now_ist.strftime("%Y-%m-%d")
     
@@ -58,7 +57,7 @@ async def daily_schedule_checker(context: ContextTypes.DEFAULT_TYPE):
 async def test_job_callback(context: ContextTypes.DEFAULT_TYPE):
     test_class = {"date": "2026-03-25", "subject": "BOT TEST", "faculty": "Automation System"}
     await send_bridge_update(context, GROUP_CHAT_ID, test_class)
-    print("Test message sent successfully to group!")
+    print("Test message sent successfully!")
 
 # ================== 🛠️ COMMANDS & MESSAGES ==================
 
@@ -76,30 +75,50 @@ async def bridge_schedule_handler(update: Update, context: ContextTypes.DEFAULT_
 async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
     if not message or not message.text: return
-    text, clean = message.text.lower(), re.sub(r'[^a-z]', '', message.text.lower())
-
-    if "baccha" in text:
-        try: await context.bot.set_message_reaction(chat_id=message.chat_id, message_id=message.message_id, reaction=[{"type": "emoji", "emoji": "🤬"}])
-        except: pass
     
+    # Non-case sensitive logic
+    text = message.text.lower()
+    clean = re.sub(r'[^a-z]', '', text)
+
+    # 1. Block Bad Words
     if any(word in clean for word in blocked_words):
         try: await message.delete()
         except: pass
         return
 
-    if any(k in text for k in ["lakshya", "jee", "2027"]):
-        await message.reply_text("📌 *📌Lakshya JEE 2027 - https://physicswallah.onelink.me/ZAZB...
-Lakshya JEE 2027 @₹5,000/- ( Offers End on 31st March )
-• LIVE Lectures by Top Faculties ( 2 Faculties Set )
-• DPP with Video Solution 
-• Regular Tests + AITS
-• LIVE Doubt Resolution
-• Access to all Upcoming Lakshya 2027 Versions 
-• Access to all Previous Arjuna 2026 Batches 
-• Access to Parishram 2027 
-• Digital Preparation KIT ✨
-• Mentorship by IITians
-• 6 Months PW Talk Subscription\n• DPPs", parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📚 Classes", url="https://www.pw.live")]]))
+    # 2. Reaction for "baccha"
+    if "baccha" in text:
+        try: await context.bot.set_message_reaction(chat_id=message.chat_id, message_id=message.message_id, reaction=[{"type": "emoji", "emoji": "🤬"}])
+        except: pass
+
+    # 3. Lakshya JEE Trigger (The Update)
+    if "lakshya" in text:
+        offer_text = (
+            "🚀 *Lakshya JEE 2027 @₹5,000/-* (Offers End on 31st March)\n\n"
+            "• LIVE Lectures by Top Faculties (2 Faculties Set)\n"
+            "• DPP with Video Solution\n"
+            "• Regular Tests + AITS\n"
+            "• LIVE Doubt Resolution\n"
+            "• Access to all Upcoming Lakshya 2027 Versions\n"
+            "• Access to all Previous Arjuna 2026 Batches\n"
+            "• Access to Parishram 2027\n"
+            "• Digital Preparation KIT ✨\n"
+            "• Mentorship by IITians\n"
+            "• 6 Months PW Talk Subscription"
+        )
+        
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📚 All Classes", url="https://www.pw.live/study-v2/batches/6779345c20fa0756e4a7fd08/batch-overview?isNewPpjFlow=true&pageName=ALL_CLASSES#Subjects_2")],
+            [InlineKeyboardButton("Lecture Planner", url="https://www.pw.live/study-v2/batches/lakshya-jee-2027-181537/subjects/677938c3246e77380db0cb6f/subject-topics/topics/lecture-planner-and-class-schedule-%7C%7C-only-pdf-853346/contents?isNewPpjFlow=true&pageName=ALL_CLASSES&topic=Lecture+Planner+And+Class+Schedule+%7C%7C+Only+PDF&chapterId=67a1f05e0a0df377968f2e66&batchSubjectId=677938c3246e77380db0cb6f&isResources=true&contentOption=Lectures")]
+            [InlineKeyboardButton("📚 Lakshya JEE 2.0", url="https://www.pw.live/study-v2/batches/6994351acb3c3eb967dd60ee/batch-overview?isNewPpjFlow=true&pageName=DESCRIPTION#Description_1")],
+            [InlineKeyboardButton("📚 Lakshya JEE 3.0", url="https://www.pw.live/study-v2/batches/6994351a00ac8b885c6d88b2/batch-overview?isNewPpjFlow=true&pageName=DESCRIPTION#Description_1")],
+            [InlineKeyboardButton("🩺 Lakshya NEET 2027", url="https://www.pw.live/study-v2/batches/6779346f920e596fe7f0e247/batch-overview?came_from=batch_listing#Description_1")],
+            
+        ])
+        
+        await message.reply_text(offer_text, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard)
+
+    # 4. Other Triggers
     elif "arjuna" in text:
         await message.reply_text("🔥 *PW Arjuna Batch*\n📚 April 2026 - Jan 2027", parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Arjuna", url="https://www.pw.live")]]))
     elif "pw" in text:
@@ -109,15 +128,15 @@ Lakshya JEE 2027 @₹5,000/- ( Offers End on 31st March )
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
     
-    # 1. 10 AM Daily Job (UTC 4:30 AM = IST 10:00 AM)
+    # 10 AM IST Daily Job
     app.job_queue.run_daily(daily_schedule_checker, time=time(hour=4, minute=30, second=0))
 
-    # 2. Test run after 60 seconds (Changed to 1 minute for faster testing)
+    # Test run after 60 seconds
     app.job_queue.run_once(test_job_callback, when=60) 
 
     app.add_handler(CommandHandler("bridge", bridge_schedule_handler))
     app.add_handler(CommandHandler("getid", get_id_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, main_handler))
 
-    print("Bot is LIVE! Checking for test in 60 seconds... 🚀")
+    print("Bot is LIVE! 🚀")
     app.run_polling()
