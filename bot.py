@@ -88,7 +88,18 @@ async def main_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if any(k in text for k in ["lakshya", "jee", "2027"]):
-        await message.reply_text("📌 *Lakshya JEE 2027*\n• LIVE Lectures\n• DPPs", parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📚 Classes", url="https://www.pw.live")]]))
+        await message.reply_text("📌 *📌Lakshya JEE 2027 - https://physicswallah.onelink.me/ZAZB...
+Lakshya JEE 2027 @₹5,000/- ( Offers End on 31st March )
+• LIVE Lectures by Top Faculties ( 2 Faculties Set )
+• DPP with Video Solution 
+• Regular Tests + AITS
+• LIVE Doubt Resolution
+• Access to all Upcoming Lakshya 2027 Versions 
+• Access to all Previous Arjuna 2026 Batches 
+• Access to Parishram 2027 
+• Digital Preparation KIT ✨
+• Mentorship by IITians
+• 6 Months PW Talk Subscription\n• DPPs", parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📚 Classes", url="https://www.pw.live")]]))
     elif "arjuna" in text:
         await message.reply_text("🔥 *PW Arjuna Batch*\n📚 April 2026 - Jan 2027", parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Arjuna", url="https://www.pw.live")]]))
     elif "pw" in text:
